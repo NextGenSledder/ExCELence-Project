@@ -1,0 +1,49 @@
+Features we were able to make work:
+- Adding and removing keyframes or shapes from the model
+- Editing existing keyframes
+- playing, pausing, restarting, looping, 
+  increasing / decreasing the speed of an animation
+
+Features we didn't implement:
+- Saving or loading an animation file 
+  --> we didn't think this was necessary since it was extra credit in the last assignment
+
+Summary of our code that makes their view work:
+----> to see changes to our model that we sent to our providers, see Assignment 8 - views submission
+- Classes implemented or extended from provider interfaces / classes:
+	- ImmutableShape
+		- NOTE: they gave us an interface of the same name, but since the only thing 
+                 	that changed from our shape implementation and theirs was their accept 
+			method for visitors, we made it an abstract class 
+			(didn't modify it, just made a new class of the same name).
+		- extended our AShape class functionality and added methods that package shape
+		  properties into objects like Point, Dimension, Color instead of getters for
+		  each property of a Shape
+	- ImmRectangle
+		- extends ImmutableShape, but overrieds the accept method to work properly
+		  with provider visitor code --> calls visitRect
+	- ImmEllipse
+		- extends ImmutableShape, but overrieds the accept method to work properly
+		  with provider visitor code --> calls visitEllipse
+	- ProviderController
+		- implemented all methods from provider interface, and added methods to 
+		  add/remove keyframes/shapes from the model (and edit keyframes)
+		- Did this since our controller, model, and view interfaces have very 
+		  different ways of passing data around
+	- SimpleAdapterModel
+		- implemented their model interface and our own --> made it an Object Adapter
+		- Our implementation of their model interface returned the correct data types more easily 
+		  (again, they had different ways of passing around the data)
+	- NewEditableView
+		- Had it extend their EditableView and implement our view interface
+		- Their view interface had a ton of methods, whereas ours had only 2. 
+		  Implementing ours made it much easier to construct in the main
+			--> also, we didn't have to duplicate any view code
+- Classes made by us to make their view work:
+	- AllInOneListener
+		- made because our provider's view has a method that takes in ONE ActionListener 
+		  and makes all of the Swift components listen to it
+		- we couldn't use our listeners (EditListener and ViewListener) because of this
+			--> they have different purposes and we didn't make one listener for all components
+
+

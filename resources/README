@@ -1,0 +1,234 @@
+This readme is for every assignment that deals with our ExCELlence application. It is divided by each assignment that deals with it. Don’t read the whole thing if you are looking for info on just 1 of the assignments.
+
+-----------------------------------------HW5-------------------------------------------------------
+Our cs3500.animator.model design consists of these classes / interfaces:
+
+class AnimationModel - the main cs3500.animator.model class.
+
+interface Shape - an interface for representing shapes that will be drawn in this program.
+
+class AShape - an implementation of Shape.
+
+class Property - a class that contains all the properties of a Shape (position, dimensions, color).
+
+interface Transformation - an interface representing a change that will be made.
+
+class ATransformation - an implementation of Transformation (might want to rename Motion)
+                       has a start and end time, start and end Property objects
+                       and booleans describing what is being changed in the Transformation
+
+enum ShapeType - an enum representing what kinds of Shapes are supported in this program.
+               (currently we support rectangle, ellipse, line, triangle)
+
+AShape is general purpose so any shape we implement can be described as an AShape
+--> we are putting the responsibility on the graphical view to draw different kinds of shape based
+   on its ShapeType.
+   For this assignment, the TextView doesn't really care what the shape looks like,
+   or what unique properties it may have. It only cares about its position, dimensions, and color
+
+ATransformation doesn't know what Shape it is "transforming"
+That way, our data can be sent to the cs3500.animator.model by creating a bunch of Property objects
+that act like checkpoints (as in we want a shape to have THESE properties at THIS TIME)
+
+The apply method in ATransformation works in such a way so that we can get the Property of
+what is being transformed at any point in the transformation process (the beginning, middle, end...)
+
+We include a lot of getter methods because we don't want to make fields public and therefore
+open to mutation.
+
+The tableTextView is a method that returns a String.
+For every shape:
+It prints "shape SHAPE_NAME SHAPE_TYPE" then every transformation that SHAPE_NAME undergoes.
+
+The cs3500.animator.model can advance to any positive time (advancedTime).
+It does this by advancing every Shape in its list of Shapes.
+Each Shape looks at the Transformations it will undergo...
+   then applies the changes of the Transformations that would be taking place during advancedTime
+In the graphical view, we could call advance for every tick and it will update every Shape.
+
+
+------------------------------------MOVING ON TO ASSIGNMENT 6--------------------------------------
+
+CHANGES FROM HW5 to HW6 (aka corrections based on feedback from self-eval and graders):
+- made AnimationModel an interface and had our model class from HW5 implement it as
+ AnimationModelImpl
+
+- Changes to AnimationModelImpl:
+   - Added an observer method for getting a copy of the list of Shapes in this animation.
+   - Added removeShape and removeTransformation methods
+
+- Changes to AShape:
+   - Added an observer method for AShape.properties
+   - Removed combineTransformation stub as literally no feedback was given about it in grading
+
+- Changes to ATransformation:
+   - removed observers for the changesSize, changesPosition, changesColor fields
+       --> they are only used in ATransformation
+   - added methods to ATransformation for every Property of a Shape (x, y, w, h, r, g, b)
+     that checks whether or not this ATransformation changes _ property
+     ex: getChangesX returns true if the Transformation calling it has different posX values
+         between its start and end states
+       --> used so we can check what is being changed in a transformation in SVG and Graphics Views
+     --> updated methods addSizeChange, addPositionChange, and addColorChange to work with these
+         new methods.
+   - changed the apply method so it properly "tweens" the properties of a shape
+
+- Changes to Property:
+   - allowed size properties to be 0 (so now the invariant is that size properties must be non-negative)
+   - added methods to Property:
+       addPosChange -- changes the Property's position values
+       addSizeChange -- changes the Property's size values
+       addColorChange -- changes the Property's color values
+
+----------------------------------------------HW6--------------------------------------------------
+Made Read-Only Model ROAnimationImpl
+- gave it an AnimationModelImpl as a field
+- allowed it to do everything an AnimationModelImpl can do EXCEPT adding a Shape or Transformation
+
+AnimationModel additions for this assignment:
+- String getCurrentView returns the properties of a shape at the current time
+   --> used for testing the model's advance method without the TableTextView method from HW5
+- int howManyShapes returns the number of shapes the model is currently holding
+- String getShapeType returns the type of the shape with the given name
+- added canvas fields to AnimationModelImpl for origin and bounds of the animation
+- added method setter and getter methods for canvas in AnimationModel
+- Added a builder in AnimationModelImpl
+   --> advance everything to 1 second because that is where most of the animations start from
+       --> we ran into an issue in svg where the properties of the Shapes were not initialized to
+           what they should be. Advancing the model to t=1 fixed this and SVG works like a charm.
+       --> this became an issue because the addShape method in the builder interface
+           didn't mention starting properties so we initialized all properties to 0 by default.
+               --> advance method changes this so the properties at the start of the first
+                   transformation are served as the default
+
+View Interface
+- gave it a method to display
+
+-------> all of the views work with any Appendable objects as their output (excluding Graphics)
+
+TableTextView
+- it is essentially the exact same as it was in HW5, we just added the canvas line at the top
+ and used the new getter methods
+
+SVGView:
+- don't have our SVG loop back, just play out animation
+- for "fill=freeze" or "fill=remove", we always assume that a shape stays where
+ it was when the animation ended (so freeze)
+ ---> we don't know if user input will specify this
+- Structure is basically this:
+   - Print out <svg tag and cavnas information
+   - for each shape in the model's list of shapes (a copy is retrieved by the view)
+       - print out appropriate shape names and attribute names depending on the shape
+       ---> ex: the x position is "x" for a Rectangle and "cx" for an Ellipse
+       - for each transformation in a shape
+           - print out animate tags for every changed attribute in the transformation
+
+GraphicsView
+- Created a GraphicsViewPanel class that extends JPanel
+- used a Timer --> actionPerformed occurs every tick --> advance the model to the next frame and
+ call repaint.
+- we added scrollbars
+- NOTE: getPreferredSize always returns a 1000 by 1000 Dimension object (due to time we didn't
+       override it to do anything noteworthy).
+
+Main
+- we expect up to 4 main arguments: -in, -out, -view, -speed
+   - in is a String which represents a file path. We then create a File and a FileReader based off
+   of this
+   - out is represented as an Appendable, which is, by default, System.out,
+    but can be specified to a file path with a String by the user
+   - view specifies which view we want to make. We build it with all empty fields
+    and then afterwards set the values, since they could come in any order
+   - speed in just an int which represents the framerate. Default 1fps.
+   - entire thing is surrounded in a try catch block, so that any thrown exceptions
+    open an error message window & exit the program
+
+-------------------------------------- MOVING ON TO HW7 -------------------------------------------
+
+Changes from HW6 to HW7:
+- added getEndT method to Shape interface and implemented it in AShape
+   - gets the amount of time that the shape is "animating" (how long its properties undergo changes
+- changes to GraphicsViewPanel:
+    - It now takes in a Controller instead of a model.
+    - Moved the Timer to this class from the GraphicsView class --> since the panel is used by more
+      than just the original graphics view it makes sense to avoid duplicate Timer code.
+    - overrided getPreferredSize so we can have the entire animation be shown with no issues
+- Changes to AnimationView:
+    - added getController methods for views that have them (see below)
+    - added getSpeed method to return framerate of an animation (see below)
+- changes to GraphicsView:
+    - Removed Timer (see above)
+    - Creates a controller in the constructor that is used by the GraphicsPanel.
+-------------------------------------------------HW7----------------------------------------------
+
+Basically, our EditView extends JFrame and is composed of 3 main panels: GraphicsPanel,
+ButtonsPanel, & EditPanel. graphicsPanel plays the animation, and has a timer which reports to a
+ViewListener. The buttonsPanel also reports to the same ViewListener. Thus, the ViewListener
+basically handles all of the playback interactions that create no changes on the model.
+EditPanel does *all* of the things that involve editing the model, and reports to an
+EditListener, which reports to a Controller, making necessary changes to the model.
+
+Classes added to model package:
+- Keyframe - Represents the Properties of a Shape at a certain time
+   - has an int field representing the time the keyframe takes place at and a Property object
+     representing the properties of a shape at that time.
+   - has getters for every field and individual property from the Property object
+- KeyframeShape - Represents a Shape that has a List<Keyframe> rather than a List<Transformation>
+   - Overridden methods:
+       - addTransformation / removeTransformaion / getTransformations
+           --> now throw UnsupportedOperationExceptions
+       - advance - utilizes keyframes instead of Transformations
+       - getEndT --> uses keyframes instead of Transformation Objects
+   - new methods:
+       - addKeyframe - adds the given keyframe to the Shape's list of keyframes
+       - removeKeyframe - removes the given keyframe from the Shape's list of keyframes
+- KeyframeAnimationModel - Represents a Model that uses keyframes instead of Transformations
+   - extends AnimationModel
+- KeyframeAnimationModelImpl
+   - extends AnimationModelImpl implements AnimationModel
+   - Overridden methods:
+       - add transformation / remove transformation methods now throw UnsupportedOperationExceptions
+
+Class added to util package:
+- AnimationModelAdapter
+   - two methods
+       - one that changes any type of model to a KeyframeAnimationModelImpl with Keyframes instead
+         of Transformations and KeyframeShapes instead of AShapes
+       - one that changes any type of model to an AnimationModelImpl with Transformations instead
+         of Keyframes and AShapes instead of KeyframeShapes
+
+Classes added to view package:
+- EditView
+   -extends JPanel, constructs a controller for itself as well as a GraphicsPanel, ButtonPanel,
+   and EditPanel.
+- ViewListener
+   - Handles all playback-related interactions for the EditView, coming from the Timer in
+   GraphicsPanel or any of the Buttons in ButtonPanel. Only ever mutates classes in the view package.
+- ButtonPanel
+   - All of the playback functionality the users might want. Start, Pause, Resume, Restart,
+   Speed up, slow down, loop or not.
+
+Changes to view package:
+- GraphicsView
+   - refactored to not listen to its own timer. Relies on getting a view from a controller
+   rather than storing it itself.
+- GraphicsViewPanel
+   - refactored to comply with the above changes to GraphicsView.
+
+NEW PACKAGE: controller
+- AnimationController / AnimationControllerImpl
+	Methods:
+Adding / removing keyframes and shapes from the model
+Saving / loading in a file
+A getter method for the model → returns a ROModel
+- EditListener - A listener for any action that may want to make changes to the model
+	Fields:
+		AnimationController and an EditPanel
+		The controller actually makes the changes that are desired, be it adding a keyframe or
+		whatever. The EditPanel is what listens to this class.
+	Methods:
+        Overrides actionPerformed to handle:
+            Adding / removing a keyframe
+            Adding / removing a shape
+            Saving the animation to a new file
+            Loading in a new file

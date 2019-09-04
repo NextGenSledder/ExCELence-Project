@@ -1,0 +1,33 @@
+1) Design Critque
+I think overall their design worked very well and made a lot of sense, even if it was 
+very different than ours (which was, of course, frustrating to work with in the beginning).
+Their use of visitors to handle drawing shapes was really clever and it's something I wish 
+we had done ourselves after seeing them use it. I think the fact that their view only ever
+had a list of Immutable Shapes as opposed to an Immutable Model makes more sense when considering
+the separation in the MVC idea, but definitely caused some duplication of code. Another big
+difference was that they packaged their properties into Points, Dimensions, and Colors from
+.awt, which felt really clunky to access. Also, the fact that their controller interface only
+had two methods was, unusual, to say the least.
+
+2) Implementation Critique
+We found working with their view implementation to be very stiff, because their implementation
+sported a couple dozen private fields and only a few methods to work with them. If we wanted to
+move forward and implement new features or make changes to the current ones, you can't do so with
+just a controller, you'd have to edit the view implementation itself to gain access to certain 
+features. We were able to work with this and never had to ask for any changes, but there are 
+definitely a few minor conveniences that we were simply unable to implement because their view
+did not allow it (for example, in our implementation when a user clicks a Keyframe it fills the
+text fields with its current values). If their implementation had better accessors it might be 
+easier to work with. This being said, their code was overall very clean and concise.
+
+3) Documentation Critique
+Each of their methods were very well documented and clearly told how they worked and what their
+parameters were. However, their README did not very well explain how these pieces came to work 
+together, and we spent a lot of time just on trying to find where a given method or class might
+actually be used and why. Thankfully, the team was very quick to respond to any questions we had 
+and very willing to explain their implementation.
+
+4) Limitations & Suggestions
+A lot of the limitations we saw were addressed in the implementation critique, as they had mostly 
+to do with the implementation of EditableView. I would suggest they use dynamic dispatch more
+heavily to separate the duties of their ActionListeners.

@@ -1,0 +1,14 @@
+We found some parts of the assignment frustrating (as expected). We thought our provider's code had a lot 
+of issues, but that changed over time as we grew to understand it and how it worked. It also made us realize 
+a lot of things we could have done differently. Every change our providers asked for that we gave them we
+should have done in the first place. We should have implemented interfaces for keyframes and properties
+and should have made our view less tightly coupled to our controller implementation.
+
+Our provider's were very pleasant to work with. They were polite and had good response time. We also
+felt we treated them the same way.
+
+Overall, this course has very deeply affected us. Going into this class, we had mad imposter syndrome.
+Even throughout this course, that persisted. That being said, the assignments we had, especially 5-8,
+have greatly increased our confidence in our to write decent code talk about vague abstract concepts.
+I think this course has made us both much much better programmers and much much better at not knowing 
+what to do. We want to say thank you. To the instructors, the TAs, everyone involved. Thank you!
